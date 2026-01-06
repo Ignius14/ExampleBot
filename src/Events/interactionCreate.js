@@ -494,6 +494,22 @@ export default {
 				return interaction.editReply({
 					content: "Payout sent.",
 				});
+
+				const sellerMention = config.sellersRoleId
+					? `<@&${config.sellersRoleId}>`
+					: "Sellers";
+
+				await thread.send({
+					content: `Welcome <@${interaction.user.id}>! ${sellerMention} will assist you shortly.`,
+				});
+
+				return interaction.editReply({
+					content: `✅ Sell thread created: <#${thread.id}>`,
+				});
+			}
+
+			if (customId === middlemanStartId) {
+				return interaction.showModal(buildMiddlemanModal());
 			}
 
 			if (customId.startsWith(buyPaymentPrefix)) {
