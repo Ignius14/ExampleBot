@@ -17,4 +17,68 @@
 
 ![Vote](https://user-images.githubusercontent.com/63320170/175336722-373eaf92-1454-4bce-b97c-e8a629c2628e.png)
 
+## 🧭 Paleidimo tutorialas
+
+1. **Įdiekite priklausomybes**
+
+   ```bash
+   npm install
+   ```
+
+2. **Sukonfigūruokite `.env`**
+
+   Užpildykite `.env` failą:
+
+   - `BOT_TOKEN` – jūsų Discord botos tokenas
+   - `OWNER_IDS` – jūsų Discord ID (gali būti keli, atskirti kableliu)
+   - `SUPPORT_CHANNEL_ID`, `LOG_CHANNEL_ID`, `BUY_SELL_CHANNEL_ID` – kanalų ID
+   - `SUPPORT_ROLE_ID` – support rolės ID
+   - `PRICE_EUR_PER_MILLION` – pradinė kaina EUR
+   - `BTC_EUR_RATE`, `LTC_EUR_RATE`, `ETH_EUR_RATE` – rezervinės kainos (jei CoinGecko nepasiekiamas)
+   - `BTC_ADDRESS`, `LTC_ADDRESS`, `ETH_ADDRESS` – piniginės adresai
+   - `PAYMENT_CHECK_INTERVAL_MS` – tikrinimo intervalas (ms)
+   - `PAYMENT_OFFSET_CENTS` – unikalus kainos offsetas centais
+   - `DELIVERY_URL` – jūsų API endpoint (pvz. `http://localhost:8080/withdraw`)
+   - `DELIVERY_API_KEY` – API raktas
+   - `VOUCHES_CHANNEL_ID` – vouches kanalo ID
+   - `MIDDLEMAN_CHANNEL_ID` – middleman kanalo ID
+   - `MIDDLEMAN_ACCOUNTS` – 20 account nickų, atskirtų kableliais
+   - `MIDDLEMAN_STATUS_URL` – backend endpoint, kuris grąžina `{ confirmed: true/false }`
+   - `MIDDLEMAN_PAYOUT_URL` – backend endpoint išmokėjimams
+   - `MIDDLEMAN_API_KEY` – API raktas
+
+3. **Paleiskite botą**
+
+   ```bash
+   npm start
+   ```
+
+4. **Komandų registracija**
+
+   Slash komandos registruojamos paleidimo metu. Jei pirmą kartą paleidus neveikia, perkraukite botą po kelių sekundžių.
+
+5. **Naudojimas**
+
+   - `/panel-support` – sukuria support panelę
+   - `/buy-panel` – sukuria buy panelę
+   - `/setprice` – pakeičia EUR kainą ir atnaujina buy panelę
+   - `/confirm-payment` – rankinis patvirtinimas (jei reikia)
+   - `/verify` – priverstinis kripto mokėjimo patikrinimas (support/seller/owner)
+   - `/setnick` – sellerio payout nick nustatymas (middleman išmokėjimams)
+
+6. **Automatinis kripto mokėjimų tikrinimas**
+
+   - Botas automatiškai tikrina BTC/LTC/ETH mokėjimus per BlockCypher balansų polling.
+   - Kai vartotojas pasirenka mokėjimo metodą, sistema užfiksuoja pradinį balansą ir kas `PAYMENT_CHECK_INTERVAL_MS` tikrina delta.
+   - Jei reikia priverstinai patikrinti, naudokite `/verify` buy threade.
+
+7. **Middleman service**
+
+   - Middleman kanale parašykite žinutę su 2 paminėjimais (buyer ir seller). Žinutė bus ištrinta, o botas sukurs threadą.
+   - Thread’e paspauskite **Start Service**, įveskite account nick ir amount.
+   - Botas parinks vieną iš `MIDDLEMAN_ACCOUNTS` ir pateiks instrukciją `/pay <nick> <amount>`.
+   - Paspaudus **I have added**, botas tikrina backend per `MIDDLEMAN_STATUS_URL`.
+   - Kai backend patvirtina, buyer’ui atsiranda mygtukai **I received items** arba **No, I haven't received anything**.
+   - Pasirinkus **I received items**, botas siunčia išmokėjimą per `MIDDLEMAN_PAYOUT_URL` (su 5% fee).
+
 ### [Click here for the Discord.js V13 version.](https://github.com/memte/ExampleBot/tree/v13)
