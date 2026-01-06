@@ -2,10 +2,11 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
+	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import config from "../../Base/config.js";
-import { buyPanelButtonId } from "../../Constants/customIds.js";
+import { buyPanelButtonId, sellPanelButtonId } from "../../Constants/customIds.js";
 import { setBuyPanelMessage } from "../../Services/pricingService.js";
 import { buildBuyPanelEmbed } from "../../Services/buyPanelService.js";
 
@@ -20,7 +21,7 @@ export const commandBase = {
 		) {
 			return interaction.reply({
 				content: "Use this command inside the buy-sell channel.",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 
@@ -31,14 +32,18 @@ export const commandBase = {
 				.setCustomId(buyPanelButtonId)
 				.setLabel("Buy")
 				.setStyle(ButtonStyle.Success),
+			new ButtonBuilder()
+				.setCustomId(sellPanelButtonId)
+				.setLabel("Sell")
+				.setStyle(ButtonStyle.Secondary),
 		);
 
-		const message = await interaction.reply({
+		await interaction.reply({
 			embeds: [embed],
 			components: [row],
-			fetchReply: true,
 		});
 
+		const message = await interaction.fetchReply();
 		setBuyPanelMessage(interaction.channelId, message.id);
 
 		return message;

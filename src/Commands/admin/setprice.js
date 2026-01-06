@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
+import { MessageFlags } from "discord.js";
 import { buildBuyPanelEmbed } from "../../Services/buyPanelService.js";
 import {
 	getBuyPanelMessage,
@@ -22,7 +23,7 @@ export const commandBase = {
 		if (!Number.isFinite(eurPrice) || eurPrice <= 0) {
 			return interaction.reply({
 				content: "Provide a valid EUR price greater than 0.",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 
@@ -48,7 +49,7 @@ export const commandBase = {
 
 		return interaction.reply({
 			content: `✅ Price updated to ${getPriceEur().toFixed(3)} EUR.`,
-			ephemeral: true,
+			flags: MessageFlags.Ephemeral,
 		});
 	},
 };

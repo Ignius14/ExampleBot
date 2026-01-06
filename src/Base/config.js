@@ -10,11 +10,34 @@ export default {
 	logChannelId: process.env.LOG_CHANNEL_ID,
 	buySellChannelId: process.env.BUY_SELL_CHANNEL_ID,
 	supportRoleId: process.env.SUPPORT_ROLE_ID,
+	sellersRoleId: process.env.SELLERS_ROLE_ID,
 	pricing: {
 		eurPerMillion: Number.parseFloat(
 			process.env.PRICE_EUR_PER_MILLION ?? "0.065",
 		),
 	},
+	massDiscounts: [
+		{
+			threshold: 500,
+			percent: Number.parseFloat(process.env.DISCOUNT_500M ?? "0"),
+		},
+		{
+			threshold: 1000,
+			percent: Number.parseFloat(process.env.DISCOUNT_1B ?? "0"),
+		},
+		{
+			threshold: 10000,
+			percent: Number.parseFloat(process.env.DISCOUNT_10B ?? "0"),
+		},
+		{
+			threshold: 100000,
+			percent: Number.parseFloat(process.env.DISCOUNT_100B ?? "0"),
+		},
+		{
+			threshold: 1000000,
+			percent: Number.parseFloat(process.env.DISCOUNT_1T ?? "0"),
+		},
+	],
 	coinRatesEur: {
 		btc: Number.parseFloat(process.env.BTC_EUR_RATE ?? "0"),
 		ltc: Number.parseFloat(process.env.LTC_EUR_RATE ?? "0"),

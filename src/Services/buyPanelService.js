@@ -16,10 +16,24 @@ export const buildBuyPanelEmbed = async () => {
 
 	const eurValue = getPriceEur();
 	const usdLine =
-		usdValue === null ? "Usd: N/A" : `Usd: ${usdValue.toFixed(3)}`;
+		usdValue === null ? "USD:```N/A```" : `USD:\`\`\`${usdValue.toFixed(3)}\`\`\``;
 
 	return new EmbedBuilder()
-		.setTitle("Buy Panel")
-		.setDescription(`Eur: ${eurValue.toFixed(3)}\n${usdLine}`)
+		.setTitle("IGN Store - Buy & Sell")
+		.setDescription(
+			[
+				"Choose an option below:",
+				"💰 BUY Currency",
+				"",
+				"(BTC/LTC/ETH)",
+				"Cuurent Price",
+				`Eur:\`\`\`${eurValue.toFixed(3)}\`\`\``,
+				usdLine,
+				"Don't trust? Use [Eldorado](https://www.eldorado.gg/users/Ignius1?tab=Offers&category=Currency&pageIndex=1) with full support",
+				"💎 SELL Items",
+				"Sell your in-game items to our verified sellers",
+				"All tickets are handled in dedicated channels.",
+			].join("\n"),
+		)
 		.setColor(0x3db38a);
 };

@@ -15,6 +15,21 @@ export const setPriceEur = (price) => {
 	currentEurPrice = price;
 };
 
+export const getDiscountPercent = (amount) => {
+	if (!Number.isFinite(amount)) {
+		return 0;
+	}
+
+	let bestDiscount = 0;
+	for (const discount of config.massDiscounts) {
+		if (amount >= discount.threshold && discount.percent > bestDiscount) {
+			bestDiscount = discount.percent;
+		}
+	}
+
+	return bestDiscount;
+};
+
 export const setBuyPanelMessage = (channelId, messageId) => {
 	buyPanelChannelId = channelId;
 	buyPanelMessageId = messageId;

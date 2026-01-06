@@ -17,4 +17,45 @@
 
 ![Vote](https://user-images.githubusercontent.com/63320170/175336722-373eaf92-1454-4bce-b97c-e8a629c2628e.png)
 
+## 🧭 Paleidimo tutorialas
+
+1. **Įdiekite priklausomybes**
+
+   ```bash
+   npm install
+   ```
+
+2. **Sukonfigūruokite `.env`**
+
+   Užpildykite `.env` failą:
+
+   - `BOT_TOKEN` – jūsų Discord botos tokenas
+   - `OWNER_IDS` – jūsų Discord ID (gali būti keli, atskirti kableliu)
+   - `SUPPORT_CHANNEL_ID`, `LOG_CHANNEL_ID`, `BUY_SELL_CHANNEL_ID` – kanalų ID
+   - `SUPPORT_ROLE_ID` – support rolės ID
+   - `PRICE_EUR_PER_MILLION` – pradinė kaina EUR
+   - `BTC_EUR_RATE`, `LTC_EUR_RATE`, `ETH_EUR_RATE` – rezervinės kainos (jei CoinGecko nepasiekiamas)
+   - `BTC_ADDRESS`, `LTC_ADDRESS`, `ETH_ADDRESS` – piniginės adresai
+   - `PAYMENT_CHECK_INTERVAL_MS` – tikrinimo intervalas (ms)
+   - `PAYMENT_OFFSET_CENTS` – unikalus kainos offsetas centais
+   - `DELIVERY_URL` – jūsų API endpoint (pvz. `http://localhost:8080/withdraw`)
+   - `DELIVERY_API_KEY` – API raktas
+
+3. **Paleiskite botą**
+
+   ```bash
+   npm start
+   ```
+
+4. **Komandų registracija**
+
+   Slash komandos registruojamos paleidimo metu. Jei pirmą kartą paleidus neveikia, perkraukite botą po kelių sekundžių.
+
+5. **Naudojimas**
+
+   - `/panel-support` – sukuria support panelę
+   - `/buy-panel` – sukuria buy panelę
+   - `/setprice` – pakeičia EUR kainą ir atnaujina buy panelę
+   - `/confirm-payment` – rankinis patvirtinimas (jei reikia)
+
 ### [Click here for the Discord.js V13 version.](https://github.com/memte/ExampleBot/tree/v13)

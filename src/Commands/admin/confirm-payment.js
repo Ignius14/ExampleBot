@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
+import { MessageFlags } from "discord.js";
 import { confirmPayment, getPayment } from "../../Services/paymentMonitor.js";
 
 export const commandBase = {
@@ -10,7 +11,7 @@ export const commandBase = {
 		if (!interaction.channel?.isThread()) {
 			return interaction.reply({
 				content: "Use this command inside a buy thread.",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 
@@ -18,7 +19,7 @@ export const commandBase = {
 		if (!pending) {
 			return interaction.reply({
 				content: "No pending payment was found for this thread.",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 
@@ -27,13 +28,13 @@ export const commandBase = {
 		} catch (error) {
 			return interaction.reply({
 				content: error.message,
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 
 		return interaction.reply({
 			content: "✅ Payment confirmed and webhook sent.",
-			ephemeral: true,
+			flags: MessageFlags.Ephemeral,
 		});
 	},
 };

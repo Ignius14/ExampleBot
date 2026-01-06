@@ -3,6 +3,7 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	EmbedBuilder,
+	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import config from "../../Base/config.js";
@@ -19,7 +20,7 @@ export const commandBase = {
 		) {
 			return interaction.reply({
 				content: "Use this command inside the support channel.",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 
