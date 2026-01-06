@@ -198,20 +198,21 @@ export default {
 			}
 
 			if (customId.startsWith(buyPaymentPrefix)) {
-				await interaction.deferReply({ ephemeral: true });
 				const method = customId.replace(buyPaymentPrefix, "");
 				const address = config.paymentAddresses[method];
 				let coinRate = config.coinRatesEur[method];
 
 				if (!interaction.channel || !interaction.channel.isThread()) {
-					return interaction.editReply({
+					return interaction.reply({
 						content: "Payment selection must be inside a buy thread.",
+						ephemeral: true,
 					});
 				}
 
 				if (!address) {
-					return interaction.editReply({
+					return interaction.reply({
 						content: "Payment address is not configured.",
+						ephemeral: true,
 					});
 				}
 
@@ -221,8 +222,9 @@ export default {
 					if (buyRequest) {
 						setBuyRequest(interaction.channel.id, buyRequest);
 					} else {
-						return interaction.editReply({
+						return interaction.reply({
 							content: "Missing buy request details for this thread.",
+							ephemeral: true,
 						});
 					}
 				}
@@ -252,8 +254,9 @@ export default {
 						thread: interaction.channel,
 					});
 				} catch (error) {
-					return interaction.editReply({
+					return interaction.reply({
 						content: error.message,
+						ephemeral: true,
 					});
 				}
 
@@ -291,8 +294,9 @@ export default {
 					files: [qrAttachment],
 				});
 
-				return interaction.editReply({
+				return interaction.reply({
 					content: "✅ Payment details sent in the thread.",
+					ephemeral: true,
 				});
 			}
 		}
@@ -305,14 +309,14 @@ export default {
 			}
 
 			if (interaction.customId === buyModalId) {
-				await interaction.deferReply({ ephemeral: true });
 				const username = interaction.fields.getTextInputValue("username");
 				const amountValue = interaction.fields.getTextInputValue("amount");
 				const amount = Number.parseFloat(amountValue);
 
 				if (!Number.isFinite(amount) || amount <= 0) {
-					return interaction.editReply({
+					return interaction.reply({
 						content: "Provide a valid amount greater than 0.",
+						ephemeral: true,
 					});
 				}
 
@@ -321,8 +325,9 @@ export default {
 					.catch(() => null);
 
 				if (!channel || !channel.isTextBased()) {
-					return interaction.editReply({
+					return interaction.reply({
 						content: "Buy-sell channel is not configured.",
+						ephemeral: true,
 					});
 				}
 
@@ -371,12 +376,12 @@ export default {
 
 				setBuyRequest(thread.id, { username, amount });
 
-				return interaction.editReply({
+				return interaction.reply({
 					content: `✅ Buy thread created: <#${thread.id}>`,
+					ephemeral: true,
 				});
 			}
 
-			await interaction.deferReply({ ephemeral: true });
 			const category = interaction.customId.replace(supportModalPrefix, "");
 			const title = interaction.fields.getTextInputValue("title");
 			const details = interaction.fields.getTextInputValue("details");
@@ -386,8 +391,9 @@ export default {
 				.catch(() => null);
 
 			if (!channel || !channel.isTextBased()) {
-				return interaction.editReply({
+				return interaction.reply({
 					content: "Support channel is not configured.",
+					ephemeral: true,
 				});
 			}
 
@@ -423,8 +429,9 @@ export default {
 				});
 			}
 
-			return interaction.editReply({
+			return interaction.reply({
 				content: `✅ Ticket created: <#${thread.id}>`,
+				ephemeral: true,
 			});
 		}
 	},
