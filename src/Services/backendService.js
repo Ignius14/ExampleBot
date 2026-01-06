@@ -113,7 +113,12 @@ export const startBackendSocket = (client) => {
 	}
 
 	socketClient = client;
-	socket = new WebSocket(config.backendWsUrl);
+	socket = new WebSocket(config.backendWsUrl, {
+		headers: {
+			"User-Agent": config.backendWsUserAgent,
+			Origin: config.backendWsOrigin,
+		},
+	});
 
 	socket.on("open", () => {
 		socketReady = true;
@@ -121,8 +126,14 @@ export const startBackendSocket = (client) => {
 	});
 
 	socket.on("message", (message) => {
+		const raw = message.toString().trim();
+		if (!raw.startsWith("{") && !raw.startsWith("[")) {
+			client.logger?.warn(`Backend socket non-JSON message: ${raw}`);
+			return;
+		}
+
 		try {
-			const data = JSON.parse(message.toString());
+			const data = JSON.parse(raw);
 			handleSocketMessage(data);
 		} catch (error) {
 			client.logger?.error(`Backend socket parse failed: ${error.message}`);

@@ -44,7 +44,9 @@
    - `MIDDLEMAN_CHANNEL_ID` – middleman kanalo ID
    - `MIDDLEMAN_ACCOUNTS` – 20 account nickų, atskirtų kableliais
    - `BACKEND_BASE_URL` – backend bazinis URL (pvz. `http://localhost:8080`)
-   - `BACKEND_WS_URL` – backend WebSocket URL (pvz. `ws://localhost:8080`)
+   - `BACKEND_WS_URL` – backend WebSocket URL (pvz. `wss://localhost:8080`)
+   - `BACKEND_WS_ORIGIN` – WS Origin antraštė (pvz. `https://localhost:8080`)
+   - `BACKEND_WS_USER_AGENT` – WS User-Agent antraštė (browser stiliaus)
    - `BACKEND_API_KEY` – API raktas
 
 3. **Paleiskite botą**

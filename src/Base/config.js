@@ -64,6 +64,11 @@ export default {
 		? process.env.MIDDLEMAN_ACCOUNTS.split(",").map((nick) => nick.trim())
 		: [],
 	backendBaseUrl: process.env.BACKEND_BASE_URL ?? "http://localhost:8080",
-	backendWsUrl: process.env.BACKEND_WS_URL ?? "ws://localhost:8080",
+	backendWsUrl: process.env.BACKEND_WS_URL ?? "wss://localhost:8080",
+	backendWsOrigin:
+		process.env.BACKEND_WS_ORIGIN ?? "https://localhost:8080",
+	backendWsUserAgent:
+		process.env.BACKEND_WS_USER_AGENT ??
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 	backendApiKey: process.env.BACKEND_API_KEY ?? "",
 };
