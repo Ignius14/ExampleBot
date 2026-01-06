@@ -43,9 +43,9 @@
    - `VOUCHES_CHANNEL_ID` – vouches kanalo ID
    - `MIDDLEMAN_CHANNEL_ID` – middleman kanalo ID
    - `MIDDLEMAN_ACCOUNTS` – 20 account nickų, atskirtų kableliais
-   - `MIDDLEMAN_STATUS_URL` – backend endpoint, kuris grąžina `{ confirmed: true/false }`
-   - `MIDDLEMAN_PAYOUT_URL` – backend endpoint išmokėjimams
-   - `MIDDLEMAN_API_KEY` – API raktas
+   - `BACKEND_BASE_URL` – backend bazinis URL (pvz. `http://localhost:8080`)
+   - `BACKEND_WS_URL` – backend WebSocket URL (pvz. `ws://localhost:8080`)
+   - `BACKEND_API_KEY` – API raktas
 
 3. **Paleiskite botą**
 
@@ -77,8 +77,29 @@
    - Middleman kanale parašykite žinutę su 2 paminėjimais (buyer ir seller). Žinutė bus ištrinta, o botas sukurs threadą.
    - Thread’e paspauskite **Start Service**, įveskite account nick ir amount.
    - Botas parinks vieną iš `MIDDLEMAN_ACCOUNTS` ir pateiks instrukciją `/pay <nick> <amount>`.
-   - Paspaudus **I have added**, botas tikrina backend per `MIDDLEMAN_STATUS_URL`.
+   - Paspaudus **I have added**, botas išsiunčia deposit requestą į backendą ir laukia WS patvirtinimo.
    - Kai backend patvirtina, buyer’ui atsiranda mygtukai **I received items** arba **No, I haven't received anything**.
-   - Pasirinkus **I received items**, botas siunčia išmokėjimą per `MIDDLEMAN_PAYOUT_URL` (su 5% fee).
+   - Pasirinkus **I received items**, botas siunčia išmokėjimą per backendą (su 5% fee).
+
+8. **Backend API (HTTP/WebSocket)**
+
+   - HTTP:
+     - `POST http://localhost:8080/api/deposit` `{ "nick": "<player>", "amount": <number>, "source": "discord" }`
+     - `POST http://localhost:8080/api/withdraw` `{ "nick": "<player>", "amount": <number>, "source": "discord" }`
+     - `GET http://localhost:8080/health`
+   - WebSocket:
+     - `ws://localhost:8080`
+     - Send JSON:
+       - `{ "type": "deposit", "nick": "<player>", "amount": <number>, "source": "discord" }`
+       - `{ "type": "withdraw", "nick": "<player>", "amount": <number>, "source": "discord" }`
+       - `{ "type": "status" }`
+     - Listen for events:
+       - `deposit_wait`
+       - `deposit_assigned`
+       - `deposit_paid`
+       - `deposit_confirmed`
+       - `withdraw_assigned`
+       - `withdraw_confirmed`
+       - `withdraw_failed`
 
 ### [Click here for the Discord.js V13 version.](https://github.com/memte/ExampleBot/tree/v13)

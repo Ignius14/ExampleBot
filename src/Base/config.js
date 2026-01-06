@@ -63,9 +63,7 @@ export default {
 	middlemanAccounts: process.env.MIDDLEMAN_ACCOUNTS
 		? process.env.MIDDLEMAN_ACCOUNTS.split(",").map((nick) => nick.trim())
 		: [],
-	middlemanStatusUrl:
-		process.env.MIDDLEMAN_STATUS_URL ?? "http://localhost:8080/middleman/status",
-	middlemanPayoutUrl:
-		process.env.MIDDLEMAN_PAYOUT_URL ?? "http://localhost:8080/middleman/payout",
-	middlemanApiKey: process.env.MIDDLEMAN_API_KEY ?? "",
+	backendBaseUrl: process.env.BACKEND_BASE_URL ?? "http://localhost:8080",
+	backendWsUrl: process.env.BACKEND_WS_URL ?? "ws://localhost:8080",
+	backendApiKey: process.env.BACKEND_API_KEY ?? "",
 };

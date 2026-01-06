@@ -1,6 +1,7 @@
 import { ActivityType, Events } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v10";
+import { startBackendSocket } from "../Services/backendService.js";
 
 export default {
 	name: Events.ClientReady,
@@ -13,6 +14,8 @@ export default {
 				{ name: "Developed by memte.", type: ActivityType.Listening },
 			],
 		});
+
+		startBackendSocket(client);
 
 		client.logger.info(`${client.user.username} Active!`);
 		//

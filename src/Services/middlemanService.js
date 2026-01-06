@@ -32,37 +32,3 @@ export const getEscrowAccount = (threadId) => {
 	const randomIndex = Math.floor(Math.random() * config.middlemanAccounts.length);
 	return config.middlemanAccounts[randomIndex];
 };
-
-export const requestMiddlemanStatus = async (payload) => {
-	const response = await fetch(config.middlemanStatusUrl, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			"x-api-key": config.middlemanApiKey,
-		},
-		body: JSON.stringify(payload),
-	});
-
-	if (!response.ok) {
-		throw new Error(`Middleman status check failed (${response.status})`);
-	}
-
-	return response.json();
-};
-
-export const requestMiddlemanPayout = async (payload) => {
-	const response = await fetch(config.middlemanPayoutUrl, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			"x-api-key": config.middlemanApiKey,
-		},
-		body: JSON.stringify(payload),
-	});
-
-	if (!response.ok) {
-		throw new Error(`Middleman payout failed (${response.status})`);
-	}
-
-	return response.json();
-};
