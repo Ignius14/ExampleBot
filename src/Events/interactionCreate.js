@@ -796,5 +796,283 @@ export default {
 				content: `✅ Ticket created: <#${thread.id}>`,
 			});
 		}
+
+		if (interaction.isButton()) {
+			const { customId } = interaction;
+
+			if (customId.startsWith(supportButtonPrefix)) {
+				const category = customId.replace(supportButtonPrefix, "");
+				return interaction.showModal(buildSupportModal(category));
+			}
+
+			if (customId === buyPanelButtonId) {
+				return interaction.showModal(buildBuyModal());
+			}
+
+			if (customId === sellPanelButtonId) {
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+				const channel = await client.channels
+					.fetch(config.buySellChannelId)
+					.catch(() => null);
+
+				if (!channel || !channel.isTextBased()) {
+					return interaction.editReply({
+						content: "Buy-sell channel is not configured.",
+					});
+				}
+
+				const thread = await createPrivateThread({
+					channel,
+					name: `sell-${interaction.user.username}`.slice(0, 90),
+					userId: interaction.user.id,
+					guild: interaction.guild,
+					roleId: config.sellersRoleId,
+				});
+
+				const sellerMention = config.sellersRoleId
+					? `<@&${config.sellersRoleId}>`
+					: "Sellers";
+
+				await thread.send({
+					content: `Welcome <@${interaction.user.id}>! ${sellerMention} will assist you shortly.`,
+				});
+
+				return interaction.editReply({
+					content: `✅ Sell thread created: <#${thread.id}>`,
+				});
+			}
+
+			if (customId.startsWith(buyPaymentPrefix)) {
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+				const method = customId.replace(buyPaymentPrefix, "");
+				const address = config.paymentAddresses[method];
+				let coinRate = config.coinRatesEur[method];
+
+				if (!interaction.channel || !interaction.channel.isThread()) {
+					return interaction.editReply({
+						content: "Payment selection must be inside a buy thread.",
+					});
+				}
+
+				if (!address) {
+					return interaction.editReply({
+						content: "Payment address is not configured.",
+					});
+				}
+
+				let buyRequest = getBuyRequest(interaction.channel.id);
+				if (!buyRequest) {
+					buyRequest = await recoverBuyRequestFromThread(interaction.channel);
+					if (buyRequest) {
+						setBuyRequest(interaction.channel.id, buyRequest);
+					} else {
+						return interaction.editReply({
+							content: "Missing buy request details for this thread.",
+						});
+					}
+				}
+
+				try {
+					const liveRates = await getLiveRates();
+					coinRate = liveRates.coinEur[method] ?? coinRate;
+				} catch {
+					coinRate = config.coinRatesEur[method];
+				}
+
+				const basePrice = getPriceEur();
+				const discountPercent = getDiscountPercent(buyRequest.amount);
+				const discountedUnitPrice =
+					basePrice * (1 - discountPercent / 100);
+				const priceBeforeOffset = discountedUnitPrice * buyRequest.amount;
+				const amountEur = priceBeforeOffset + randomOffset();
+				const offsetEur = amountEur - priceBeforeOffset;
+
+				let payment;
+				try {
+					payment = buildPayment({
+						method,
+						address,
+						amountEur,
+						offsetEur,
+						coinRate,
+						userId: interaction.user.id,
+						username: buyRequest.username,
+						amountQuantity: buyRequest.amount,
+						thread: interaction.channel,
+					});
+				} catch (error) {
+					return interaction.editReply({
+						content: error.message,
+					});
+				}
+
+				await registerPayment(client, payment);
+
+				const paymentUri = getPaymentUri({
+					method,
+					address,
+					amount: payment.displayAmount,
+				});
+
+				const qrBuffer = await generateQrBuffer(paymentUri);
+				const qrAttachment = new AttachmentBuilder(qrBuffer, {
+					name: "payment-qr.png",
+				});
+
+				const embed = new EmbedBuilder()
+					.setTitle("Payment Details")
+					.setDescription(
+						[
+							`Method: **${payment.coinLabel}**`,
+							`Address: \`${address}\``,
+							`Amount: **${payment.displayAmount} ${payment.coinLabel}**`,
+							`EUR Price: **${amountEur.toFixed(2)} EUR**`,
+							`Unit Price: **${discountedUnitPrice.toFixed(3)} EUR**`,
+							`Discount: **${discountPercent.toFixed(2)}%**`,
+							`Buy Amount: **${buyRequest.amount}**`,
+							`Username: **${buyRequest.username}**`,
+							"Send the payment and wait for staff confirmation.",
+						].join("\n"),
+					)
+					.setColor(0xf2b705)
+					.setImage("attachment://payment-qr.png");
+
+				await interaction.channel.send({
+					embeds: [embed],
+					files: [qrAttachment],
+				});
+
+				return interaction.editReply({
+					content: "✅ Payment details sent in the thread.",
+				});
+			}
+		}
+
+		if (interaction.isModalSubmit()) {
+			if (!interaction.customId.startsWith(supportModalPrefix)) {
+				if (interaction.customId !== buyModalId) {
+					return;
+				}
+			}
+
+			if (interaction.customId === buyModalId) {
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+				const username = interaction.fields.getTextInputValue("username");
+				const amountValue = interaction.fields.getTextInputValue("amount");
+				const amount = Number.parseFloat(amountValue);
+
+				if (!Number.isFinite(amount) || amount <= 0) {
+					return interaction.editReply({
+						content: "Provide a valid amount greater than 0.",
+					});
+				}
+
+				const channel = await client.channels
+					.fetch(config.buySellChannelId)
+					.catch(() => null);
+
+				if (!channel || !channel.isTextBased()) {
+					return interaction.editReply({
+						content: "Buy-sell channel is not configured.",
+					});
+				}
+
+				const thread = await createPrivateThread({
+					channel,
+					name: `buy-${interaction.user.username}`.slice(0, 90),
+					userId: interaction.user.id,
+					guild: interaction.guild,
+					roleId: config.supportRoleId,
+				});
+
+				const paymentRow = new ActionRowBuilder().addComponents(
+					new ButtonBuilder()
+						.setCustomId(`${buyPaymentPrefix}btc`)
+						.setLabel("BTC")
+						.setStyle(ButtonStyle.Secondary),
+					new ButtonBuilder()
+						.setCustomId(`${buyPaymentPrefix}ltc`)
+						.setLabel("LTC")
+						.setStyle(ButtonStyle.Secondary),
+					new ButtonBuilder()
+						.setCustomId(`${buyPaymentPrefix}eth`)
+						.setLabel("ETH")
+						.setStyle(ButtonStyle.Secondary),
+				);
+
+				const summary = new EmbedBuilder()
+					.setTitle("Buy Request")
+					.setDescription(`User: <@${interaction.user.id}>`)
+					.addFields(
+						{ name: "Username", value: `**${username}**`, inline: true },
+						{ name: "Amount", value: `**${amount}**`, inline: true },
+					)
+					.setColor(0x3db38a);
+
+				await thread.send({
+					content: `Welcome <@${interaction.user.id}>! Select a payment method below.`,
+					embeds: [summary],
+					components: [paymentRow],
+				});
+
+				setBuyRequest(thread.id, { username, amount });
+
+				return interaction.editReply({
+					content: `✅ Buy thread created: <#${thread.id}>`,
+				});
+			}
+
+			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+			const category = interaction.customId.replace(supportModalPrefix, "");
+			const title = interaction.fields.getTextInputValue("title");
+			const details = interaction.fields.getTextInputValue("details");
+
+			const channel = await client.channels
+				.fetch(config.supportChannelId)
+				.catch(() => null);
+
+			if (!channel || !channel.isTextBased()) {
+				return interaction.editReply({
+					content: "Support channel is not configured.",
+				});
+			}
+
+			const thread = await createPrivateThread({
+				channel,
+				name: `${category}-${interaction.user.username}`.slice(0, 90),
+				userId: interaction.user.id,
+				guild: interaction.guild,
+				roleId: config.supportRoleId,
+			});
+
+			const embed = new EmbedBuilder()
+				.setTitle(title)
+				.setDescription(details)
+				.setColor(0x4e9af1)
+				.addFields({
+					name: "Category",
+					value: category,
+					inline: true,
+				});
+
+			await thread.send({
+				content: `New ticket from <@${interaction.user.id}>`,
+				embeds: [embed],
+			});
+
+			const logChannel = await client.channels
+				.fetch(config.logChannelId)
+				.catch(() => null);
+
+			if (logChannel?.isTextBased()) {
+				await logChannel.send({
+					content: `🎫 Ticket created by <@${interaction.user.id}> in <#${thread.id}> (${category}).`,
+				});
+			}
+
+			return interaction.editReply({
+				content: `✅ Ticket created: <#${thread.id}>`,
+			});
+		}
 	},
 };
