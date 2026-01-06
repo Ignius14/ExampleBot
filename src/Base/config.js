@@ -2,7 +2,9 @@ import "@dotenvx/dotenvx/config";
 
 export default {
 	prefix: "!",
-	owners: ["Owner ID"],
+	owners: process.env.OWNER_IDS
+		? process.env.OWNER_IDS.split(",").map((id) => id.trim())
+		: ["Owner ID"],
 	token: process.env.BOT_TOKEN,
 	supportChannelId: process.env.SUPPORT_CHANNEL_ID,
 	logChannelId: process.env.LOG_CHANNEL_ID,
