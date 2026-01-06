@@ -1,7 +1,20 @@
-import { ChannelType, Collection, EmbedBuilder, Events } from "discord.js";
+import {
+	ChannelType,
+	Collection,
+	EmbedBuilder,
+	Events,
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+} from "discord.js";
 import config from "../Base/config.js";
+import {
+	middlemanStartId,
+} from "../Constants/customIds.js";
+import { setMiddlemanThread } from "../Services/middlemanService.js";
 const cooldown = new Collection();
 const vouchCounts = new Map();
+const middlemanCooldown = new Map();
 
 const vouchRegex =
 	/^vouch\s+<@!?(\d+)>\s+bought:\s+(.+?)\s+amount:\s+(.+)$/i;
@@ -60,8 +73,17 @@ const handleVouchMessage = async (message) => {
 		return;
 	}
 
+	if (!sellerMember.manageable) {
+		await message.channel.send({
+			content: `⚠️ Cannot update nickname for <@${sellerId}>. Check role hierarchy and permissions.`,
+		});
+		return;
+	}
+
 	const existingCount =
-		vouchCounts.get(sellerId) ?? extractExistingVouches(sellerMember.displayName) ?? 0;
+		vouchCounts.get(sellerId) ??
+		extractExistingVouches(sellerMember.displayName) ??
+		0;
 	const nextCount = existingCount + 1;
 	vouchCounts.set(sellerId, nextCount);
 
@@ -69,6 +91,76 @@ const handleVouchMessage = async (message) => {
 	const nextName = `${baseName} (Vouches ${nextCount})`;
 
 	await sellerMember.setNickname(nextName).catch(() => null);
+};
+
+const handleMiddlemanMessage = async (message) => {
+	const formatHint =
+		"Buyer: @buyer Seller: @seller";
+
+	await message.delete().catch(() => null);
+
+	const now = Date.now();
+	const lastUsed = middlemanCooldown.get(message.author.id) ?? 0;
+	if (now - lastUsed < 60 * 60 * 1000) {
+		const reply = await message.channel.send({
+			content: `<@${message.author.id}> You can only start a middleman service once per hour.`,
+		});
+		setTimeout(() => reply.delete().catch(() => null), 10_000);
+		return;
+	}
+
+	const mentionedUsers = [...message.mentions.users.values()];
+	if (mentionedUsers.length < 2) {
+		const reply = await message.channel.send({
+			content: `${formatHint}`,
+		});
+		setTimeout(() => reply.delete().catch(() => null), 10_000);
+		return;
+	}
+
+	const [buyer, seller] = mentionedUsers;
+	middlemanCooldown.set(message.author.id, now);
+
+	const thread = await message.channel.threads.create({
+		name: `middleman-${buyer.username}-${seller.username}`.slice(0, 90),
+		type: ChannelType.PrivateThread,
+		reason: `Middleman request by ${message.author.id}`,
+	});
+
+	await thread.members.add(buyer.id).catch(() => null);
+	await thread.members.add(seller.id).catch(() => null);
+
+	setMiddlemanThread(thread.id, {
+		buyerId: buyer.id,
+		sellerId: seller.id,
+		createdBy: message.author.id,
+	});
+
+	const startEmbed = new EmbedBuilder()
+		.setTitle("Middleman Service")
+		.setDescription("Press **Start Service** to provide transaction details.")
+		.setColor(0x4e9af1);
+
+	const row = new ActionRowBuilder().addComponents(
+		new ButtonBuilder()
+			.setCustomId(middlemanStartId)
+			.setLabel("Start Service")
+			.setStyle(ButtonStyle.Primary),
+	);
+
+	await thread.send({
+		content: `Buyer: <@${buyer.id}> Seller: <@${seller.id}>`,
+		embeds: [startEmbed],
+		components: [row],
+	});
+
+	await message.channel.send({
+		content: `Buyer: <@${buyer.id}> Seller: <@${seller.id}>`,
+	});
+
+	await message.channel.send({
+		content: `✅ Middleman thread created: <#${thread.id}>`,
+	});
 };
 
 export default {
@@ -89,6 +181,14 @@ export default {
 			message.channel.id === config.vouchesChannelId
 		) {
 			await handleVouchMessage(message);
+			return;
+		}
+
+		if (
+			config.middlemanChannelId &&
+			message.channel.id === config.middlemanChannelId
+		) {
+			await handleMiddlemanMessage(message);
 			return;
 		}
 

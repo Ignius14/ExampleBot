@@ -12,6 +12,7 @@ export default {
 	supportRoleId: process.env.SUPPORT_ROLE_ID,
 	sellersRoleId: process.env.SELLERS_ROLE_ID,
 	vouchesChannelId: process.env.VOUCHES_CHANNEL_ID,
+	middlemanChannelId: process.env.MIDDLEMAN_CHANNEL_ID,
 	pricing: {
 		eurPerMillion: Number.parseFloat(
 			process.env.PRICE_EUR_PER_MILLION ?? "0.065",
@@ -59,4 +60,12 @@ export default {
 	),
 	deliveryApiKey: process.env.DELIVERY_API_KEY ?? "",
 	deliveryUrl: process.env.DELIVERY_URL ?? "http://localhost:8080/withdraw",
+	middlemanAccounts: process.env.MIDDLEMAN_ACCOUNTS
+		? process.env.MIDDLEMAN_ACCOUNTS.split(",").map((nick) => nick.trim())
+		: [],
+	middlemanStatusUrl:
+		process.env.MIDDLEMAN_STATUS_URL ?? "http://localhost:8080/middleman/status",
+	middlemanPayoutUrl:
+		process.env.MIDDLEMAN_PAYOUT_URL ?? "http://localhost:8080/middleman/payout",
+	middlemanApiKey: process.env.MIDDLEMAN_API_KEY ?? "",
 };

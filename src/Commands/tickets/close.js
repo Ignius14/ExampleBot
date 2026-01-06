@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { MessageFlags } from "discord.js";
 import config from "../../Base/config.js";
+import { clearMiddlemanThread } from "../../Services/middlemanService.js";
 
 const canCloseThread = (member) => {
 	if (!member) {
@@ -42,6 +43,7 @@ export const commandBase = {
 			flags: MessageFlags.Ephemeral,
 		});
 
+		clearMiddlemanThread(interaction.channel.id);
 		await interaction.channel.setLocked(true).catch(() => null);
 		await interaction.channel.setArchived(true).catch(() => null);
 
