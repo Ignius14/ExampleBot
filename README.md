@@ -40,6 +40,7 @@
    - `PAYMENT_OFFSET_CENTS` – unikalus kainos offsetas centais
    - `DELIVERY_URL` – jūsų API endpoint (pvz. `http://localhost:8080/withdraw`)
    - `DELIVERY_API_KEY` – API raktas
+   - `VOUCHES_CHANNEL_ID` – vouches kanalo ID
 
 3. **Paleiskite botą**
 
@@ -57,5 +58,12 @@
    - `/buy-panel` – sukuria buy panelę
    - `/setprice` – pakeičia EUR kainą ir atnaujina buy panelę
    - `/confirm-payment` – rankinis patvirtinimas (jei reikia)
+   - `/verify` – priverstinis kripto mokėjimo patikrinimas (support/seller/owner)
+
+6. **Automatinis kripto mokėjimų tikrinimas**
+
+   - Botas automatiškai tikrina BTC/LTC/ETH mokėjimus per BlockCypher balansų polling.
+   - Kai vartotojas pasirenka mokėjimo metodą, sistema užfiksuoja pradinį balansą ir kas `PAYMENT_CHECK_INTERVAL_MS` tikrina delta.
+   - Jei reikia priverstinai patikrinti, naudokite `/verify` buy threade.
 
 ### [Click here for the Discord.js V13 version.](https://github.com/memte/ExampleBot/tree/v13)

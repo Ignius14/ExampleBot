@@ -11,6 +11,7 @@ export default {
 	buySellChannelId: process.env.BUY_SELL_CHANNEL_ID,
 	supportRoleId: process.env.SUPPORT_ROLE_ID,
 	sellersRoleId: process.env.SELLERS_ROLE_ID,
+	vouchesChannelId: process.env.VOUCHES_CHANNEL_ID,
 	pricing: {
 		eurPerMillion: Number.parseFloat(
 			process.env.PRICE_EUR_PER_MILLION ?? "0.065",

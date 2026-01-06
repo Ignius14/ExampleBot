@@ -112,19 +112,24 @@ const stopIntervalIfIdle = () => {
 	}
 };
 
+const verifyPaymentInternal = async (client, payment, threadId) => {
+	const currentBalance = await fetchBalance(payment.method, payment.address);
+	const delta = currentBalance - payment.baselineBalance;
+
+	if (delta >= payment.expectedDelta) {
+		activePayments.delete(threadId);
+		await sendPaymentConfirmed(client, payment);
+		stopIntervalIfIdle();
+		return { confirmed: true };
+	}
+
+	return { confirmed: false };
+};
+
 const checkPayments = async (client) => {
 	for (const [paymentId, payment] of activePayments.entries()) {
 		try {
-			const currentBalance = await fetchBalance(
-				payment.method,
-				payment.address,
-			);
-			const delta = currentBalance - payment.baselineBalance;
-
-			if (delta >= payment.expectedDelta) {
-				activePayments.delete(paymentId);
-				await sendPaymentConfirmed(client, payment);
-			}
+			await verifyPaymentInternal(client, payment, paymentId);
 		} catch (error) {
 			client.logger?.error(
 				`Payment check failed for ${paymentId}: ${error.message}`,
@@ -192,6 +197,15 @@ export const registerPayment = async (client, payment) => {
 };
 
 export const getPayment = (threadId) => activePayments.get(threadId);
+
+export const verifyPayment = async (client, threadId) => {
+	const payment = activePayments.get(threadId);
+	if (!payment) {
+		throw new Error("No pending payment found for this thread.");
+	}
+
+	return verifyPaymentInternal(client, payment, threadId);
+};
 
 export const confirmPayment = async (client, threadId) => {
 	const payment = activePayments.get(threadId);

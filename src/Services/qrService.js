@@ -1,10 +1,10 @@
 import QRCode from "qrcode";
 
 export const getPaymentUri = ({ method, address, amount }) => {
-	const amountValue = Number.parseFloat(amount);
-	const amountParam = Number.isFinite(amountValue)
-		? `?amount=${amountValue}`
-		: "";
+	const amountParam =
+		amount === undefined || amount === null || amount === ""
+			? ""
+			: `?amount=${amount}`;
 
 	switch (method) {
 		case "btc":
